@@ -1,0 +1,337 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create Lambda VPC and provision Lambda function.
+Parameters:
+  MSKAccountId:
+    Description: AWS Account Id where MSK cluster is deployed
+    Type:  String
+
+Resources:
+  LambdaVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: LambdaVPC
+
+  LambdaVPCPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref LambdaVPC
+      AvailabilityZone:
+        Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: "AWS::Region"}
+      CidrBlock: 172.16.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", ["LambdaVPC","public-subnet"]]
+
+  LambdaVPCPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref LambdaVPC
+      AvailabilityZone:
+        Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: "AWS::Region"}
+      CidrBlock: 172.16.1.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", ["LambdaVPC","private-subnet-a"]]
+
+  LambdaVPCPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref LambdaVPC
+      AvailabilityZone:
+        Fn::Select:
+         - 1
+         - Fn::GetAZs: {Ref: "AWS::Region"}
+      CidrBlock: 172.16.2.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", ["LambdaVPC","private-subnet-b"]]
+
+  LambdaVPCPrivateSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref LambdaVPC
+      AvailabilityZone:
+        Fn::Select:
+         - 2
+         - Fn::GetAZs: {Ref: "AWS::Region"}
+      CidrBlock: 172.16.3.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", ["LambdaVPC","private-subnet-c"]]
+
+  LambdaVPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join ["-", ["LambdaVPC","gateway"]]
+
+  LambdaVPCGatewayToInternet:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref LambdaVPC
+      InternetGatewayId: !Ref LambdaVPCInternetGateway
+
+  LambdaVPCPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LambdaVPC
+
+  LambdaVPCPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: LambdaVPCGatewayToInternet
+    Properties:
+      RouteTableId: !Ref LambdaVPCPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref LambdaVPCInternetGateway
+
+  LambdaVPCPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref LambdaVPCPublicSubnet1
+      RouteTableId: !Ref LambdaVPCPublicRouteTable
+
+  LambdaVPCNatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt LambdaVPCNatPublicIP.AllocationId
+      SubnetId: !Ref LambdaVPCPublicSubnet1
+
+  LambdaVPCNatPublicIP:
+    Type: AWS::EC2::EIP
+    DependsOn: LambdaVPC
+    Properties:
+      Domain: vpc
+
+  LambdaVPCPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LambdaVPC
+
+  LambdaVPCPrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref LambdaVPCPrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref LambdaVPCNatGateway
+
+  LambdaVPCPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref LambdaVPCPrivateSubnet1
+      RouteTableId: !Ref LambdaVPCPrivateRouteTable
+
+  LambdaVPCPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref LambdaVPCPrivateSubnet2
+      RouteTableId: !Ref LambdaVPCPrivateRouteTable
+
+  LambdaVPCPrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref LambdaVPCPrivateSubnet3
+      RouteTableId: !Ref LambdaVPCPrivateRouteTable
+
+  LambdaS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Join 
+        - '-'
+        - - cross-account-lambda-consumer-data
+          - !Ref AWS::Region
+          - !Ref AWS::AccountId
+
+  LambdaConsumerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: "lambda-logs"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:Describe*"
+                  - "ec2:List*"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - "arn:aws:logs:*:*:*"
+        - PolicyName: "lambda-s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                Resource: !GetAtt LambdaS3Bucket.Arn
+              - Effect: Allow
+                Action: s3:*Object
+                Resource: 
+                  !Sub "${LambdaS3Bucket.Arn}/*"
+        - PolicyName: "lambda-msk-esm"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeVpcs
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - kafka:DescribeCluster
+                  - kafka:DescribeClusterV2
+                  - kafka:GetBootstrapBrokers
+                  - kafka:ListScramSecrets
+                  - secretsmanager:GetSecretValue
+                  - kms:Decrypt
+                  - kafka:DescribeVpcConnection
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:Connect
+                  - kafka-cluster:DescribeClusterDynamicConfiguration
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:cluster/msk-*/*'
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:DescribeTopic
+                  - kafka-cluster:ReadData
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:topic/msk-*/*'
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:AlterGroup
+                  - kafka-cluster:DescribeGroup
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:group/msk-*/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaMSKExecutionRole
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda to use this group to access MSK cluster
+      VpcId: !Ref LambdaVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 14001
+        ToPort: 14100
+        CidrIp: 172.16.0.0/16
+      SecurityGroupEgress:
+      - Description: Allow all outbound traffic
+        IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+
+  LambdaConsumer:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Lambda Consumer of MSK
+      Runtime: python3.9
+      FunctionName: msk-lambda-cross-account-iam
+      Handler: index.handler
+      Role: !GetAtt LambdaConsumerRole.Arn
+      Timeout: 300
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref LambdaS3Bucket
+      Code:
+        ZipFile: |
+          import base64
+          import boto3
+          import datetime
+          import os
+
+          bucket_name = os.getenv("S3_BUCKET_NAME")
+
+          def handler(event, context):
+              concated_str= ""
+              
+              # Iterate over events
+              for partition_key, partition_values in event['records'].items():
+                  for record_value in partition_values:
+                      data = base64.b64decode(record_value['value'])
+                      data = data.decode("utf-8")
+                      concated_str += data
+                      concated_str += "\n"
+
+              # Write all events to S3
+              encoded_string = concated_str.encode()
+              file_name = "customer-data-" + str(datetime.datetime.now())
+              s3_path = file_name + ".csv"
+              s3 = boto3.client("s3")
+              s3.put_object(Body=encoded_string, Bucket=bucket_name, Key=s3_path)
+
+Outputs:
+  LambdaVPCId:
+    Description: VPC in which AWS Lambda function would be deployed
+    Value: !Ref LambdaVPC
+    Export:
+      Name: !Sub "${AWS::StackName}-LambdaVPC"
+  LambdaVPCPrivateRouteTable:
+    Description: Route table associated with private subnets of Lambda VPC
+    Value: !Ref LambdaVPCPrivateRouteTable
+  LambdaArn:
+    Description: Arn of Lambda Consumer
+    Value: !GetAtt
+      - LambdaConsumer
+      - Arn
+  LambdaRoleArn:
+    Description: Arn of IAM Role attached to the Lambda Consumer
+    Value: !GetAtt
+      - LambdaConsumerRole
+      - Arn
+  LambdaSecurityGroup:
+    Description: Lambda Security Group
+    Value: !Ref LambdaSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-LambdaSecurityGroup"
+  LambdaVPCAccountId:
+    Description: AWS Account Id
+    Value: !Ref AWS::AccountId
+  LambdaVPCPrivateSubnetOne: 
+    Description: The ID of private subnet one created
+    Value: !Ref 'LambdaVPCPrivateSubnet1'
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnet1"
+  LambdaVPCPrivateSubnetTwo: 
+    Description: The ID of private subnet two created
+    Value: !Ref 'LambdaVPCPrivateSubnet2'
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnet2"
+  LambdaVPCPrivateSubnetThree: 
+    Description: The ID of private subnet three created
+    Value: !Ref 'LambdaVPCPrivateSubnet3'
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnet3"
+
+
+

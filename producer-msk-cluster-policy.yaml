@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Apply a cluster policy to MSK cluster
+Parameters:
+  MSKClusterArn:
+    Description: Arn of the MSK Cluster
+    Type: String
+  LambdaRoleArn:
+    Description: Arn of the IAM Role used by Lambda function
+    Type: String
+  LambdaAccountId:
+    Description: AWS Account ID where Lambda is deployed
+    Type: String
+
+Resources:
+  MSKClusterPolicy:
+    Type: AWS::MSK::ClusterPolicy
+    Properties:
+      ClusterArn: !Ref MSKClusterArn
+      Policy: 
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${LambdaAccountId}:root
+            Action:
+              - kafka:CreateVpcConnection
+              - kafka:GetBootstrapBrokers
+              - kafka:DescribeCluster
+              - kafka:DescribeClusterV2
+            Resource: !Ref MSKClusterArn
+          - Effect: Allow
+            Principal:
+              AWS: !Ref LambdaRoleArn
+            Action:
+              - kafka-cluster:Connect
+              - kafka-cluster:AlterCluster
+              - kafka-cluster:DescribeCluster
+            Resource: !Ref MSKClusterArn
+          - Effect: Allow
+            Principal:
+              AWS: !Ref LambdaRoleArn
+            Action:
+              - kafka-cluster:*Topic*
+              - kafka-cluster:WriteData
+              - kafka-cluster:ReadData
+            Resource: !Sub arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:topic/*
+          - Effect: Allow
+            Principal:
+              AWS: !Ref LambdaRoleArn
+            Action:
+              - kafka-cluster:AlterGroup
+              - kafka-cluster:DescribeGroup
+            Resource: !Sub arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:group/*
