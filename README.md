@@ -1,6 +1,6 @@
 ## Trigger AWS Lambda from a cross-account Amazon MSK
 
-This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - Trigger AWS Lambda from a cross-account Amazon MSK
+This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - ![Trigger AWS Lambda from a cross-account Amazon MSK](https://blog-to-be-published)
 
 Here is the architecture that the cloudformation templates help you build -
 
