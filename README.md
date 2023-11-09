@@ -4,7 +4,7 @@ This repository contains AWS CloudFormation templates to setup producer and cons
 
 Here is the architecture that the cloudformation templates help you build -
 
-![Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/master/architecture.jpg?raw=true)
+![Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/blob/main/architecture.jpg?raw=true)
 
 ## Security
 
