@@ -1,6 +1,6 @@
-## Trigger AWS Lambda from a cross-account Amazon MSK
+## Triggering AWS Lambda function from a cross-account Amazon Managed Streaming for Apache Kafka 
 
-This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - [Trigger AWS Lambda from a cross-account Amazon MSK](https://blog-to-be-published). The blog provides the steps how you can trigger an AWS Lambda in the consumer account from a cross-account Amazon MSK in the producer account.
+This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - [Triggering AWS Lambda function from a cross-account Amazon Managed Streaming for Apache Kafka ](https://blog-to-be-published). The blog provides the steps how you can trigger an AWS Lambda in the consumer account from a cross-account Amazon MSK in the producer account.
 
 Here is the architecture that the cloudformation templates help you build -
 
