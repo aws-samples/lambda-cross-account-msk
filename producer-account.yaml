@@ -333,19 +333,19 @@ Resources:
               - Effect: Allow
                 Action: 
                   - kafka-cluster:Connect
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:cluster/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:cluster/*/*'
               - Effect: Allow
                 Action: 
                   - kafka-cluster:DescribeTopic
                   - kafka-cluster:CreateTopic
                   - kafka-cluster:WriteData
                   - kafka-cluster:ReadData
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:topic/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:topic/*/*'
               - Effect: Allow
                 Action: 
                   - kafka-cluster:AlterGroup
                   - kafka-cluster:DescribeGroup
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:group/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${AWS::AccountId}:group/*/*'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
 
