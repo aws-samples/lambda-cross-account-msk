@@ -38,12 +38,12 @@ aws cloudformation delete-stack --stack-name producer-msk-cluster-policy
 
 Delete the resources created as a part of producer account setup
 ```
-aws cloudformation delete-stack --stack-name producer-account
+aws cloudformation delete-stack --stack-name producer-account-msk
 ```
 
 Delete the resources created as a part of consumer account setup
 ```
-aws cloudformation delete-stack --stack-name consumer-account
+aws cloudformation delete-stack --stack-name consumer-account-lambda
 ```
 
 ## Security
