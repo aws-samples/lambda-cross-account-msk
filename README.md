@@ -19,7 +19,7 @@ aws cloudformation create-stack --stack-name producer-account-msk --template-bod
 
 To setup the consumer account run the Cloudformation template - 
 ```
-aws cloudformation create-stack --stack-name producer-account-msk --template-body file://consumer-account.yaml --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name consumer-account-lambda --template-body file://consumer-account.yaml --parameters ParameterKey=MSKAccountId,ParameterValue=<<AWS Producer Account Id>> --capabilities CAPABILITY_NAMED_IAM
 ```
 
 To setup the Amazon MSK cluster resource policy in producer account run the Cloudformation template - 
