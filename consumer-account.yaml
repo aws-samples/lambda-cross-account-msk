@@ -222,17 +222,17 @@ Resources:
                 Action:
                   - kafka-cluster:Connect
                   - kafka-cluster:DescribeClusterDynamicConfiguration
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:cluster/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:cluster/*/*'
               - Effect: Allow
                 Action:
                   - kafka-cluster:DescribeTopic
                   - kafka-cluster:ReadData
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:topic/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:topic/*/*'
               - Effect: Allow
                 Action:
                   - kafka-cluster:AlterGroup
                   - kafka-cluster:DescribeGroup
-                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:group/msk-*/*'
+                Resource: !Sub 'arn:aws:kafka:${AWS::Region}:${MSKAccountId}:group/*/*'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaMSKExecutionRole
 
