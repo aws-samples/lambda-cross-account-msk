@@ -1,10 +1,10 @@
 ## Trigger AWS Lambda from a cross-account Amazon MSK
 
-This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - ![Trigger AWS Lambda from a cross-account Amazon MSK](https://blog-to-be-published). The blog provides the steps how you can trigger an AWS Lambda in the consumer account from a cross-account Amazon MSK in the producer account.
+This repository contains AWS CloudFormation templates to setup producer and consumer accounts required for the blog - [Trigger AWS Lambda from a cross-account Amazon MSK](https://blog-to-be-published). The blog provides the steps how you can trigger an AWS Lambda in the consumer account from a cross-account Amazon MSK in the producer account.
 
 Here is the architecture that the cloudformation templates help you build -
 
-[Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/blob/main/architecture.jpg?raw=true)
+![Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/blob/main/architecture.jpg?raw=true)
 
 In the producer account, Amazon MSK cluster is deployed with the multi-VPC connectivity enabled. In the consumer account, Lambda ESM for Amazon MSK is deployed to invoke the Lambda function for the events in the cross-account Amazon MSK cluster.
 
