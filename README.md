@@ -4,7 +4,7 @@ This repository contains AWS CloudFormation templates to setup producer and cons
 
 Here is the architecture that the cloudformation templates help you build -
 
-![Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/blob/main/architecture.jpg?raw=true)
+[Architecture to demonstrate how to trigger AWS Lambda from cross-account Amazon MSK](https://github.com/aws-samples/lambda-cross-account-msk/blob/main/architecture.jpg?raw=true)
 
 In the producer account, Amazon MSK cluster is deployed with the multi-VPC connectivity enabled. In the consumer account, Lambda ESM for Amazon MSK is deployed to invoke the Lambda function for the events in the cross-account Amazon MSK cluster.
 
