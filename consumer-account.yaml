@@ -251,6 +251,15 @@ Resources:
         IpProtocol: "-1"
         CidrIp: 0.0.0.0/0
 
+  LambdaSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref LambdaSecurityGroup
+      IpProtocol: tcp
+      FromPort: 14001
+      ToPort: 14100
+      SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
   LambdaConsumer:
     Type: AWS::Lambda::Function
     Properties:
